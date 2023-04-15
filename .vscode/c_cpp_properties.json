@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${DEVKITARM}/include",
+                "${DEVKITPRO}/libgba/include",
+                "${workspaceFolder}/build"
+            ],
+            "defines": [],
+            "compilerPath": "${DEVKITARM}/bin/arm-none-eabi-gcc",
+            "cStandard": "c17",
+            "intelliSenseMode": "gcc-arm",
+            "configurationProvider": "ms-vscode.makefile-tools",
+            "compilerArgs": [
+                "-lgba"
+            ]
+        }
+    ],
+    "version": 4
+}

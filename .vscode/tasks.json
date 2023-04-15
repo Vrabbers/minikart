@@ -1,0 +1,58 @@
+{
+    "version": "2.0.0",
+    "tasks" : [
+        {
+            "label": "build debug",
+            "type": "shell",
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false
+            },
+            "command": "make",
+            "args": [
+                "DEBUG=1"
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "build release",
+            "type": "shell",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "command": "make",
+            "args": [
+                "DEBUG=0"
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "clean",
+            "type": "shell",
+            "command": "make clean"
+        },
+        {
+            "label": "run",
+            "type": "shell",
+            "dependsOn": [
+                "build release"
+            ],
+            "isBackground": true,
+            "command": "mgba ${workspaceFolder}/${workspaceFolderBasename}.gba",
+            "problemMatcher": []
+        },
+    ]
+}

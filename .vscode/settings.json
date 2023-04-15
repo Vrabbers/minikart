@@ -1,0 +1,27 @@
+{
+    "files.associations": {
+        "gba_interrupt.h": "c",
+        "gba_video.h": "c",
+        "kart_pal_bin.h": "c",
+        "gba_base.h": "c",
+        "gba_systemcalls.h": "c",
+        "gba_input.h": "c",
+        "gba_console.h": "c",
+        "kart_img_bin.h": "c",
+        "gba_sprites.h": "c",
+        "gba.h": "c",
+        "gba_sio.h": "c",
+        "gba_multiboot.h": "c",
+        "gba_dma.h": "c",
+        "sprites.h": "c",
+        "gba_compression.h": "c",
+        "gba_affine.h": "c",
+        "gba_sound.h": "c",
+        "gba_timers.h": "c",
+        "string.h": "c",
+        "kart.h": "c",
+        "stdlib.h": "c",
+        "gba_types.h": "c",
+        "stdio.h": "c"
+    }
+}
