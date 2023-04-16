@@ -2,7 +2,7 @@
 
 #include <gba_sprites.h>
 
-typedef s16* ShoamAffinePtr;
+typedef void* ShoamAffinePtr;
 
 void copy_kart_pals(void);
 
