@@ -15,3 +15,4 @@ typedef s16 f8_8;
 
 typedef s32 f24_8;
 #define F24_8(n) ((f24_8) ((n) * 256.0))
+

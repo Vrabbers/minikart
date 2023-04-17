@@ -34,13 +34,15 @@ int main(void)
     memcpy(OBJ_BASE_ADR, kart_img_bin, kart_img_bin_size);
     copy_kart_pals();
 
+    //consoleDemoInit();
+
     BG_COLORS[0] = 0x764C;
     irqInit();
     irqEnable(IRQ_VBLANK);
     clear_shoam();
     VBlankIntrWait();
 
-    REG_DISPCNT = BG_ALL_ENABLE | OBJ_1D_MAP | OBJ_ON;
+    REG_DISPCNT |= OBJ_1D_MAP | OBJ_ON;
 
     for (int i = 0; i < 8; i++)
     {
@@ -89,10 +91,39 @@ void update_karts(void)
     for (int i = 0; i < 8; i++)
     {
         struct kart* k = &karts[i];
-        f24_8 dx = (lut_cos(k->theta) * k->vel) >> 8;
-        f24_8 dy = (lut_sin(k->theta) * k->vel) >> 8;
+
+        f24_8 cos_theta = lut_cos(k->theta);
+        f24_8 sin_theta = lut_sin(k->theta);
+        f24_8 dx = (cos_theta * k->vel) >> 8;
+        f24_8 dy = (sin_theta * k->vel) >> 8;
         k->x = clamp(F24_8(-130), k->x + dx, F24_8(130));
         k->y = clamp(F24_8(-130), k->y - dy, F24_8(130));
+
+        for (int j = 0; j < 8; j++)
+        {
+            if (i == j)
+                continue;
+
+            f24_8 x1, x2, y1, y2;
+            u32 dist2;
+            x1 = k->x >> 8;
+            x2 = karts[j].x >> 8;
+            y1 = k->y >> 8;
+            y2 = karts[j].y >> 8;
+
+            dist2 = ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+
+            if (dist2 <= 49)
+            {
+                u16 dist = Sqrt(dist2);
+                printf("k %d w %d: %d\n u", i, j, dist);
+                k->x -= cos_theta * dist;
+                k->y += sin_theta * dist;
+                k->vel = 0;
+
+            }
+        }
+
         k->theta += k->theta_vel;
         k->vel = (k->vel * F24_8(95/100.0)) >> 8;
     }
