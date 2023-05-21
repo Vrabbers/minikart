@@ -9,6 +9,8 @@
 #include "sprites.h"
 #include "lut_math.h"
 #include "ftypes.h"
+#include "vector2.h"
+
 
 vu32 frame_counter;
 
@@ -16,12 +18,11 @@ vu32 keys;
 
 struct kart 
 {
-    f24_8 x;
-    f24_8 y;
+    Vector2 position;
+    Vector2 velocity;
+    Vector2 acceleration;
     u16 theta;
     f8_8 theta_vel;
-    f24_8 vel;
-    u32 timer;
 };
 
 struct kart karts[8];
@@ -42,18 +43,17 @@ int main(void)
     clear_shoam();
     VBlankIntrWait();
 
-    REG_DISPCNT |= OBJ_1D_MAP | OBJ_ON;
+    REG_DISPCNT = OBJ_1D_MAP | OBJ_ON;
 
     for (int i = 0; i < 8; i++)
     {
         struct kart k = 
             {
-                i << 12,
-                i << 12,
-                rand() & 0xFFFF,
+                v2mul(V2_8(1.0, 1.0), i << 14),
+                V2_8(0, 0),
+                V2_8(0, 0),
                 0,
-                F24_8(0.0),
-                rand() & 0x1A
+                0
             };
         karts[i] = k;
     }
@@ -68,22 +68,7 @@ int main(void)
 
 void random_karts(void)
 {
-    for (int i = 1; i < 8; i++)
-    {
-        struct kart* k = &karts[i];
-
-        if (k->timer == 0)
-        {
-            k->vel = rand() & 0x3ff;
-            u16 theta_vel = rand() & 0x7ff;
-            k->theta_vel = (rand() & 1) ? theta_vel : -theta_vel;
-            k->timer = rand() & 0x1F;
-        }
-        else 
-        {
-            k->timer--;
-        }
-    }
+    return;
 }
 
 void update_karts(void)
@@ -92,40 +77,22 @@ void update_karts(void)
     {
         struct kart* k = &karts[i];
 
-        f24_8 cos_theta = lut_cos(k->theta);
-        f24_8 sin_theta = lut_sin(k->theta);
-        f24_8 dx = (cos_theta * k->vel) >> 8;
-        f24_8 dy = (sin_theta * k->vel) >> 8;
-        k->x = clamp(F24_8(-130), k->x + dx, F24_8(130));
-        k->y = clamp(F24_8(-130), k->y - dy, F24_8(130));
+        Vector2 dir_vec = {lut_cos(k->theta), -lut_sin(k->theta)};
+        Vector2 ortho_vec = {-dir_vec.y, dir_vec.x};
 
-        for (int j = 0; j < 8; j++)
-        {
-            if (i == j)
-                continue;
+        f24_8 para_friction = fmul(v2dot(k->velocity, dir_vec), F24_8(-0.05));
+        f24_8 ortho_friction = fmul(v2dot(k->velocity, ortho_vec), F24_8(-0.1));
 
-            f24_8 x1, x2, y1, y2;
-            u32 dist2;
-            x1 = k->x >> 8;
-            x2 = karts[j].x >> 8;
-            y1 = k->y >> 8;
-            y2 = karts[j].y >> 8;
+        k->acceleration = v2add(k->acceleration, v2mul(dir_vec, para_friction));
+        k->acceleration = v2add(k->acceleration, v2mul(ortho_vec, ortho_friction));
 
-            dist2 = ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 
-            if (dist2 <= 49)
-            {
-                u16 dist = Sqrt(dist2);
-                printf("k %d w %d: %d\n u", i, j, dist);
-                k->x -= cos_theta * dist;
-                k->y += sin_theta * dist;
-                k->vel = 0;
-
-            }
-        }
+        k->velocity = v2add(k->velocity, k->acceleration);
+        k->position = v2add(k->position, k->velocity);
 
         k->theta += k->theta_vel;
-        k->vel = (k->vel * F24_8(95/100.0)) >> 8;
+
+        k->acceleration = V2_8(0.0, 0.0);
     }
 }
 
@@ -145,8 +112,8 @@ void render_karts(void)
     {
         struct kart* k = &karts[i];
         s32 x, y;
-        x = ((k->x - me_kart.x) >> 8) + 118;
-        y = ((k->y - me_kart.y) >> 8) + 72;
+        x = ((k->position.x - me_kart.position.x) >> 8) + 118;
+        y = ((k->position.y - me_kart.position.y) >> 8) + 72;
 
         if (x < 0 || x > SCREEN_WIDTH || y < 0 || y > SCREEN_HEIGHT)
             continue;
@@ -175,8 +142,8 @@ void game(void)
         karts[0].theta_vel = 0;
 
     if (keys & KEY_A)
-        karts[0].vel = F24_8(5.0);
-    
+        karts[0].acceleration = (Vector2) {lut_cos(karts[0].theta) >> 1, -lut_sin(karts[0].theta) >> 1};
+
     random_karts();
     update_karts();
     render_karts();

@@ -16,3 +16,7 @@ typedef s16 f8_8;
 typedef s32 f24_8;
 #define F24_8(n) ((f24_8) ((n) * 256.0))
 
+inline f24_8 fmul(f24_8 a, f24_8 b)
+{
+    return  (a * b) >> 8;
+}
